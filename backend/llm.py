@@ -32,6 +32,6 @@ async def openai_moderate(text: str) -> str:
         input=text,
     )
     response = response.to_dict()
-    response = response["results"][0]
-    response.pop("category_applied_input_types")
+    response = response["results"][0]["flagged"]
+    # response.pop("category_applied_input_types")
     return response

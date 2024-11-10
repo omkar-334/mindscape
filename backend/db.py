@@ -39,3 +39,23 @@ class DBclient:
         sentiments = user.collection("sentiments")
         sentiments.add(sentiment_dict)
         return sentiment_dict
+
+    def get_chat_history(self, user_id: str):
+        users = self.client.collection("users")
+        user = users.document(user_id).get().to_dict()
+        messages = user.get("messages", [])
+        return self.format_messages(messages)
+
+    def format_messages(self, messages):
+        formatted = []
+        for message in messages:
+            sender = message["sender"].strip()
+            if sender == "bot":
+                sender = "Therapist"
+            else:
+                sender = "Patient"
+            content = message["content"].strip().strip("\"'")
+
+            formatted_message = f"{sender}: {content}"
+            formatted.append(formatted_message)
+        return "\n".join(formatted)

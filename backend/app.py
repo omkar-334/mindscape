@@ -1,5 +1,7 @@
 import datetime
 import os
+import random
+from datetime import timedelta
 
 import uvicorn
 from dotenv import load_dotenv
@@ -10,7 +12,7 @@ from pyngrok import ngrok
 from db import DBclient
 from llm import llm, openai_moderate
 from models import Analyzer, Transcriber
-from prompts import reflect_prompt
+from prompts import reflect_prompt, user_prompt
 
 load_dotenv()
 ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
@@ -44,7 +46,8 @@ def process_response(entity, type):
     outdict = dict(
         uid=uid,
         type=type,
-        createdAt=entity.get("createdAt", datetime.datetime.now()),
+        createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+        content=entity["content"],
     )
     results = results | outdict
     db.add_sentiment(uid, results)
@@ -54,7 +57,9 @@ def process_response(entity, type):
 
 @app.post("/reflect")
 async def reflect(prompt: str, user_id: str, background_tasks: BackgroundTasks) -> str:
-    response = await llm(reflect_prompt, prompt)
+    history = db.get_chat_history(user_id)
+    chat_prompt = user_prompt.format(history, prompt)
+    response = await llm(reflect_prompt, chat_prompt)
     chat = dict(
         content=prompt,
         uid=user_id,
@@ -79,8 +84,15 @@ async def analyze_note(user_id: str, note_id: str, background_tasks: BackgroundT
 
 @app.post("/moderate")
 async def moderate(text: str) -> str:
-    response = await openai_moderate(text)
-    return response
+    flagged = await openai_moderate(text)
+    if flagged:
+        return fail
+    return success
+
+
+@app.post("/transcribe")
+async def transcribe(audio_bytes: str) -> str:
+    pass
 
 
 if __name__ == "__main__":
