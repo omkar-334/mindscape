@@ -96,7 +96,7 @@ async def transcribe(audio_bytes: str) -> str:
 
 
 if __name__ == "__main__":
-    public_url = ngrok.connect(8000)
-    print(f" * ngrok tunnel available at {public_url}")
+#     public_url = ngrok.connect(8000)
+#     print(f" * ngrok tunnel available at {public_url}")
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
