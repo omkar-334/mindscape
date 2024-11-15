@@ -24,11 +24,13 @@ Track emotional well-being with:
 <img width="1440" alt="Screenshot 2024-11-16 at 1 39 54 AM" src="https://github.com/user-attachments/assets/9e52f526-442f-4d83-8a59-2241b9c7e7fa">
 <img width="1440" alt="Screenshot 2024-11-16 at 1 40 18 AM" src="https://github.com/user-attachments/assets/79e847e6-9d4b-4f15-9d13-a2976deeba2e">
 
+
 ### **Sentiment Analysis**
 - Analyze emotional trends using a sentiment analysis tool.
 - View detailed emotion breakdowns for individual entries.
 - Track metrics like dominant emotions, sentiment scores, and emotional averages over time.
 <img width="1440" alt="Screenshot 2024-11-16 at 1 40 33 AM" src="https://github.com/user-attachments/assets/663559fa-2cd9-48cd-8ad6-f4fc743ce882">
+<img width="1440" alt="Screenshot 2024-11-16 at 1 45 29 AM" src="https://github.com/user-attachments/assets/aa017375-2d14-4fac-8bcf-e5e4b0907000">
 
 ### **Self-Care Resources**
 Mindscape offers a variety of self-care tools, including:
