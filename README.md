@@ -119,11 +119,6 @@ Mindscape is an open-source project. Contributions are welcome to enhance featur
    ```
 4. Push the branch and submit a pull request.
 
----
 
-## License
-Mindscape is released under the MIT License. See the LICENSE file for details.
-
----
 
 **Mindscape: Your journey to better mental health begins here.**
