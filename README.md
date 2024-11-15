@@ -1,4 +1,4 @@
-# Mindscape: README
+# Mindscape
 
 ## Overview
 
