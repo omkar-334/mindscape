@@ -99,7 +99,7 @@ Ensure the following tools are installed:
    npm start
    ```
 
-5. Open the app in your browser at `http://localhost:3000` (frontend) and `http://localhost:8000` (backend).
+5. Open the app in your browser at `http://localhost:5173` (frontend) and `http://localhost:8000` (backend).
 
 ---
 
