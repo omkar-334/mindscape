@@ -1,0 +1,36 @@
+NLP - track posts/keywords - sentiment analysis -> forum/resource recommendation
+monitor user and alert contacts/emergency
+
+use GCP natural language api for sentiment analysis, content moderation
+
+realtime alerts based on posts/daily reminders
+find a mental health convo dataset - finetune llm
+
+add journal for private notes - suggest daily prompts
+mood checkins at intervals
+GitHub style
+
+
+6. Web Application: Community Mental Health Support Platform
+Problem Statement: Create a web application designed to facilitate community-driven mental
+health support by connecting users with peers, therapists, and wellness resources. This
+platform should offer AI-powered mood tracking, access to mental health resources, and
+anonymous forums for users to seek support, all while using NLP to ensure user safety and
+detect distress signals.
+Challenges to Address:
+● Natural Language Processing: Implement NLP models to detect negative sentiment or
+distress in user interactions.
+● User Safety: Develop real-time alerts for crisis intervention while ensuring user
+anonymity and security.
+● Personalization: Provide tailored resources and support based on individual needs and
+emotional states.
+● Data Privacy Compliance: Ensure strict privacy measures to protect sensitive mental
+health data.
+7.
+
+
+features left to be added
+therapists near me
+journal
+contacts
+events
