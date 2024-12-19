@@ -11,7 +11,7 @@ mood checkins at intervals
 GitHub style
 
 
-6. Web Application: Community Mental Health Support Platform
+Web Application: Community Mental Health Support Platform
 Problem Statement: Create a web application designed to facilitate community-driven mental
 health support by connecting users with peers, therapists, and wellness resources. This
 platform should offer AI-powered mood tracking, access to mental health resources, and
@@ -26,11 +26,14 @@ anonymity and security.
 emotional states.
 ● Data Privacy Compliance: Ensure strict privacy measures to protect sensitive mental
 health data.
-7.
+
 
 
 features left to be added
+detect distress signals
+real-time alerts for crisis intervention
 therapists near me
 journal
 contacts
 events
+
