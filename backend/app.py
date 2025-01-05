@@ -2,11 +2,14 @@ import datetime
 import os
 import random
 from datetime import timedelta
+from typing import Optional
+from uuid import uuid4
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, File, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from pyngrok import ngrok
 
 from db import DBclient
@@ -15,7 +18,9 @@ from models import Analyzer, Transcriber
 from prompts import reflect_prompt, user_prompt
 
 load_dotenv()
-ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
+ngrok.set_auth_token(token := os.getenv("NGROK_TOKEN"))
+SAVE_DIR = "images"
+os.makedirs(SAVE_DIR, exist_ok=True)  # Ensure the directory exists
 
 running = {"status": "running"}
 success = {"status": "success"}
@@ -36,7 +41,7 @@ app.add_middleware(
 )
 
 
-def process_response(entity, type):
+def process_text(entity, type):
     uid = entity.get("uid", entity.get("userId", None))
     if not uid:
         return fail
@@ -55,6 +60,31 @@ def process_response(entity, type):
     return success
 
 
+async def process_image(userid, content, type):
+    try:
+        emotions, remarks = await analyzer.analyze_image(content)
+
+        results = dict(
+            uid=userid,
+            type=type,
+            createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+            content=remarks,
+            emotions=emotions,
+            score=0,
+        )
+        if userid:
+            db.add_sentiment(userid, results)
+        print(results)
+        return success
+    except Exception:
+        return fail
+
+
+@app.get("/")
+async def home():
+    return {"status": "success"}
+
+
 @app.post("/reflect")
 async def reflect(prompt: str, user_id: str, background_tasks: BackgroundTasks) -> str:
     history = db.get_chat_history(user_id)
@@ -64,21 +94,21 @@ async def reflect(prompt: str, user_id: str, background_tasks: BackgroundTasks) 
         content=prompt,
         uid=user_id,
     )
-    background_tasks.add_task(process_response, chat, "chat")
+    background_tasks.add_task(process_text, chat, "chat")
     return response
 
 
 @app.post("/analyze_post")
 async def analyze_post(room_id: str, post_id: str, background_tasks: BackgroundTasks):
     post = db.get_post(room_id, post_id)
-    background_tasks.add_task(process_response, post, "post")
+    background_tasks.add_task(process_text, post, "post")
     return running
 
 
 @app.post("/analyze_note")
 async def analyze_note(user_id: str, note_id: str, background_tasks: BackgroundTasks):
     note = db.get_note(user_id, note_id)
-    background_tasks.add_task(process_response, note, "note")
+    background_tasks.add_task(process_text, note, "note")
     return running
 
 
@@ -90,13 +120,32 @@ async def moderate(text: str) -> str:
     return success
 
 
-@app.post("/transcribe")
-async def transcribe(audio_bytes: str) -> str:
-    pass
+class ImageRequest(BaseModel):
+    image_bytes: str
+
+
+@app.post("/analyze_image")
+async def analyze_image(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+):
+    image_bytes = await file.read()
+    # image_filename = f"{uuid4()}.jpeg"
+    # image_path = os.path.join(SAVE_DIR, image_filename)
+
+    # with open(image_path, "wb") as img_file:
+    #     img_file.write(image_bytes)
+
+    background_tasks.add_task(process_image, user_id, image_bytes, "image")
+    return running
 
 
 if __name__ == "__main__":
-#     public_url = ngrok.connect(8000)
-#     print(f" * ngrok tunnel available at {public_url}")
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # public_url = ngrok.connect(8000)
+    # print(f" * ngrok tunnel available at {public_url}")
+    uvicorn.run(
+        app,
+        port=8000,
+        timeout_keep_alive=60,
+    )
