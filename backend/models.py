@@ -1,4 +1,4 @@
-from google.cloud import language_v1
+from google.cloud import language_v1, texttospeech
 from google.oauth2 import service_account
 from transformers import (
     pipeline,
@@ -8,6 +8,79 @@ from transformers import (
 import librosa
 import torch
 import numpy as np
+
+def load_language_client():
+    credentials = service_account.Credentials.from_service_account_file(
+        "creds.json",
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+    client = language_v1.LanguageServiceClient(credentials=credentials)
+    return client
+
+
+def load_tts_client():
+    credentials = service_account.Credentials.from_service_account_file(
+        "creds.json",
+        scopes=["https://www.googleapis.com/auth/cloud-platform"],
+    )
+    client = texttospeech.TextToSpeechClient(credentials=credentials)
+    return client
+
+
+def load_emotion_model():
+    model_id = "firdhokk/speech-emotion-recognition-with-openai-whisper-large-v3"
+    model = AutoModelForAudioClassification.from_pretrained(model_id)
+    feature_extractor = AutoFeatureExtractor.from_pretrained(model_id, do_normalize=True)
+    return model, feature_extractor
+
+
+def load_text_model():
+    model = pipeline(
+        "text-classification",
+        model="j-hartmann/emotion-english-distilroberta-base",
+        top_k=None,
+    )
+    return model
+
+
+class TextToSpeech:
+    def __init__(self):
+        self.client = load_tts_client()
+        
+    def synthesize(self, text, language_code='en-US', voice_name='en-US-Neural2-F'):
+        synthesis_input = texttospeech.SynthesisInput(text=text)
+        
+        voice = texttospeech.VoiceSelectionParams(
+            language_code=language_code,
+            name=voice_name
+        )
+        
+        audio_config = texttospeech.AudioConfig(
+            audio_encoding=texttospeech.AudioEncoding.MP3,
+            speaking_rate=1.0,
+            pitch=0
+        )
+        
+        try:
+            response = self.client.synthesize_speech(
+                input=synthesis_input,
+                voice=voice,
+                audio_config=audio_config
+            )
+            
+            # Convert to base64 for easy transmission
+            audio_base64 = base64.b64encode(response.audio_content).decode('utf-8')
+            
+            return {
+                "audio": audio_base64,
+                "format": "mp3",
+                "success": True
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
+            }
 
 
 def load_language_client():

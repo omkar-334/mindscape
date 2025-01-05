@@ -14,6 +14,10 @@ from llm import llm, openai_moderate
 from models import Analyzer, Transcriber
 from prompts import reflect_prompt, user_prompt
 
+from pydantic import BaseModel
+from typing import Optional
+from models import TextToSpeech
+
 load_dotenv()
 ngrok.set_auth_token(os.getenv("NGROK_TOKEN"))
 
@@ -105,6 +109,24 @@ async def analyze_audio(request: AudioRequest, background_tasks: BackgroundTasks
         
     return results
 
+class TextToSpeechRequest(BaseModel):
+    text: str
+    language_code: Optional[str] = 'en-US'
+    voice_name: Optional[str] = 'en-US-Neural2-F'
+
+tts = TextToSpeech()
+
+@app.post("/text-to-speech")
+async def convert_text_to_speech(request: TextToSpeechRequest):
+    result = tts.synthesize(
+        text=request.text,
+        language_code=request.language_code,
+        voice_name=request.voice_name
+    )
+    return {
+            "audio": result["audio"],
+            "format": result["format"]
+        }
 
 @app.get('/')
 async def home():
