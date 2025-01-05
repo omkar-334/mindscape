@@ -102,9 +102,7 @@ class Analyzer:
             "emotions": {emotion["label"]: emotion["score"] for emotion in emotion_results},
         }
 
-    async def analyze_image(self, image, path=False):
-        if path:
-            image = open(image, "rb").read()
+    async def analyze_image(self, image):
         base64_image = base64.b64encode(image).decode("utf-8")
 
         response = await self.openai_client.chat.completions.create(
@@ -162,51 +160,3 @@ class Analyzer:
         emotion_scores = {self.emotion_model.config.id2label[i]: prob.item() for i, prob in enumerate(probabilities)}
 
         return {"predicted_emotion": predicted_emotion, "emotion_scores": emotion_scores}
-
-# def preprocess_audio(self, audio_array: np.ndarray, orig_sr: int) -> dict:
-#     """
-#     Preprocess audio data for the emotion recognition model.
-#     """
-#     # Resample if necessary
-#     if orig_sr != self.sampling_rate:
-#         audio_array = librosa.resample(audio_array, orig_sr=orig_sr, target_sr=self.sampling_rate)
-
-#     # Handle duration
-#     max_length = int(self.sampling_rate * self.max_duration)
-#     if len(audio_array) > max_length:
-#         audio_array = audio_array[:max_length]
-#     else:
-#         audio_array = np.pad(audio_array, (0, max_length - len(audio_array)))
-
-#     # Extract features
-#     inputs = self.feature_extractor(audio_array, sampling_rate=self.sampling_rate, max_length=max_length, truncation=True, return_tensors="pt")
-
-#     return {k: v.to(self.device) for k, v in inputs.items()}
-
-
-# def analyze_audio_data(self, audio_array: np.ndarray, sampling_rate: int) -> dict:
-#     """
-#     Analyze audio data and return emotion predictions.
-#     """
-#     # Preprocess audio
-#     inputs = self.preprocess_audio(audio_array, sampling_rate)
-
-#     # Get model predictions
-#     with torch.no_grad():
-#         outputs = self.audio_model(**inputs)
-
-#     # Get probabilities using softmax
-#     probs = torch.nn.functional.softmax(outputs.logits, dim=-1)[0]
-
-#     # Convert predictions to dictionary
-#     emotions = {}
-#     for i, prob in enumerate(probs):
-#         emotions[self.id2label[i]] = float(prob)  # Convert tensor to float for JSON serialization
-
-#     # Get primary emotion
-#     predicted_id = torch.argmax(probs).item()
-#     primary_emotion = self.id2label[predicted_id]
-#     confidence = float(probs[predicted_id])
-
-#     return {"primary_emotion": primary_emotion, "confidence": confidence, "emotions": emotions}
-

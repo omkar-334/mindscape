@@ -1,13 +1,11 @@
 import datetime
-import io
 import json
 import os
 import random
 from datetime import timedelta
+from pathlib import Path
 from uuid import uuid4
 
-import numpy as np
-import soundfile as sf
 import uvicorn
 from db import DBclient
 from dotenv import load_dotenv
@@ -16,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from llm import llm, openai_moderate
 from models import Analyzer
 from prompts import reflect_prompt, user_prompt
+from pydub import AudioSegment
 from pyngrok import ngrok
 
 load_dotenv()
@@ -59,7 +58,7 @@ def process_text(entity, type):
     return success
 
 
-async def process_image(userid, content):
+async def process_image(userid, content, q):
     # try:
     emotions, remarks = await analyzer.analyze_image(content)
 
@@ -72,47 +71,33 @@ async def process_image(userid, content):
         score=0,
     )
 
-    db.add_sentiment(userid, results)
+    db.add_sentiment(userid, results, q)
     print(results)
     return success
     # except Exception:
     #     return fail
 
 
-def process_audio(userid, content):
-    try:
-        # Convert BytesIO to in-memory bytes array for soundfile
-        audio_bytes = content.getvalue()
+async def process_audio(userid, audio_data, q):
+    results = analyzer.analyze_audio(audio_data)
+    emotions = results["emotion_scores"]
+    emotions["sadness"] = emotions.pop("sad")
+    emotions["surprise"] = emotions.pop("surprised")
+    emotions["joy"] = emotions.pop("happy")
+    emotions["anger"] = emotions.pop("angry")
+    emotions["fear"] = emotions.pop("fearful")
 
-        # Create a new BytesIO object with the audio bytes
-        with io.BytesIO(audio_bytes) as audio_buffer:
-            # Read audio data using soundfile
-            audio_data, samplerate = sf.read(audio_buffer)
-
-            # Convert to mono if stereo
-            if len(audio_data.shape) > 1:
-                audio_data = np.mean(audio_data, axis=1)
-
-            # Get emotion analysis results
-            results = analyzer.analyze_audio(audio_data, samplerate)
-
-            outdict = dict(
-                uid=userid,
-                type="audio",
-                createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
-                content=f"Audio emotion analysis - Primary: {results['primary_emotion']} ({results['confidence']:.2%})",
-                emotions=results["emotions"],
-                primary_emotion=results["primary_emotion"],
-                confidence=results["confidence"],
-            )
-
-            db.add_sentiment(userid, outdict)
-            print(outdict)
-            return success
-
-    except Exception as e:
-        print(f"Error processing audio: {str(e)}")
-        return fail
+    outdict = dict(
+        uid=userid,
+        type="audio",
+        createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+        content=f"Predicted emotion: {results['predicted_emotion']}",
+        emotions=results["emotion_scores"],
+        score=0,
+    )
+    print(outdict)
+    db.add_sentiment(userid, outdict, q)
+    return success
 
 
 def save_file(file, extension):
@@ -121,6 +106,7 @@ def save_file(file, extension):
 
     with open(image_path, "wb") as img_file:
         img_file.write(file)
+    return image_path
 
 
 @app.get("/")
@@ -175,9 +161,11 @@ async def analyze_image(
     user_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    q=False,
 ):
+    q = bool(q)
     image_bytes = await file.read()
-    background_tasks.add_task(process_image, user_id, image_bytes)
+    background_tasks.add_task(process_image, user_id, image_bytes, q)
     return running
 
 
@@ -186,11 +174,26 @@ async def analyze_audio(
     user_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    q=False,
 ):
+    q = bool(q)
     audio_bytes = await file.read()
-    audio_file = io.BytesIO(audio_bytes)
-    background_tasks.add_task(process_audio, user_id, audio_file)
-    return running
+
+    original_file_path = Path(SAVE_DIR) / f"{user_id}_input.{file.filename.split('.')[-1]}"
+    converted_file_path = Path(SAVE_DIR) / f"{uuid4()}_converted.wav"
+
+    with open(original_file_path, "wb") as f:
+        f.write(audio_bytes)
+
+    try:
+        audio = AudioSegment.from_file(original_file_path)
+        audio.export(converted_file_path, format="wav")
+    except Exception as e:
+        return {"error": f"Failed to process audio: {str(e)}"}
+
+    background_tasks.add_task(process_audio, user_id, converted_file_path, q)
+
+    return {"status": "running", "wav_path": str(converted_file_path)}
 
 
 if __name__ == "__main__":

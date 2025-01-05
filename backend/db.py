@@ -33,10 +33,13 @@ class DBclient:
         note = journal.document(note_id)
         return note.get().to_dict()
 
-    def add_sentiment(self, user_id, sentiment_dict):
+    def add_sentiment(self, user_id, sentiment_dict, q=False):
+        prefix = "q_" if q else ""
+        collection = f"{prefix}sentiments"
+
         users = self.client.collection("users")
         user = users.document(user_id)
-        sentiments = user.collection("sentiments")
+        sentiments = user.collection(collection)
         sentiments.add(sentiment_dict)
         return sentiment_dict
 

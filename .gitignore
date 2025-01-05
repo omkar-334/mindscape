@@ -3,5 +3,5 @@ __pycache__/
 .env
 creds.json
 firebase.json
-
+images/
 backend/venv
