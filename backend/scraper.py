@@ -1,9 +1,6 @@
 import json
 import time
-from io import StringIO
 
-import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
