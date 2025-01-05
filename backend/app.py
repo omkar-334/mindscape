@@ -90,13 +90,29 @@ async def moderate(text: str) -> str:
     return success
 
 
-@app.post("/transcribe")
-async def transcribe(audio_bytes: str) -> str:
-    pass
+@app.post("/analyze_audio")
+async def analyze_audio(request: AudioRequest, background_tasks: BackgroundTasks):
+    results = analyzer.analyze(request.audio_data, content_type="audio")
+        
+    outdict = dict(
+        uid=request.user_id,
+        type="audio",
+        createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+        content=results
+    )
+    
+    background_tasks.add_task(db.add_sentiment, request.user_id, outdict)
+        
+    return results
+
+
+@app.get('/')
+async def home():
+    return {'status':"success"}
 
 
 if __name__ == "__main__":
 #     public_url = ngrok.connect(8000)
 #     print(f" * ngrok tunnel available at {public_url}")
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8000)
