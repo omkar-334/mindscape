@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import random
 from datetime import timedelta
@@ -6,16 +7,15 @@ from typing import Optional
 from uuid import uuid4
 
 import uvicorn
+from db import DBclient
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, File, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from pyngrok import ngrok
-
-from db import DBclient
 from llm import llm, openai_moderate
 from models import Analyzer, Transcriber
 from prompts import reflect_prompt, user_prompt
+from pydantic import BaseModel
+from pyngrok import ngrok
 
 load_dotenv()
 ngrok.set_auth_token(token := os.getenv("NGROK_TOKEN"))
@@ -83,6 +83,13 @@ async def process_image(userid, content, type):
 @app.get("/")
 async def home():
     return {"status": "success"}
+
+
+@app.get("/therapists")
+def therapists():
+    with open("data.json", "r", encoding="utf-8") as json_file:
+        loaded_data = json.load(json_file)
+        return {"therapists": loaded_data}
 
 
 @app.post("/reflect")
