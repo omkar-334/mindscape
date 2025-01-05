@@ -1,36 +1,35 @@
 import datetime
+import io
 import json
 import os
 import random
 from datetime import timedelta
-from typing import Optional
 from uuid import uuid4
 
+import numpy as np
+import soundfile as sf
 import uvicorn
 from db import DBclient
 from dotenv import load_dotenv
-from fastapi import BackgroundTasks, FastAPI, File, Query, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from llm import llm, openai_moderate
-from models import Analyzer, Transcriber
+from models import Analyzer
 from prompts import reflect_prompt, user_prompt
-from pydantic import BaseModel
 from pyngrok import ngrok
 
 load_dotenv()
 ngrok.set_auth_token(token := os.getenv("NGROK_TOKEN"))
-SAVE_DIR = "images"
-os.makedirs(SAVE_DIR, exist_ok=True)  # Ensure the directory exists
 
 running = {"status": "running"}
 success = {"status": "success"}
 fail = {"status": "fail"}
 
+SAVE_DIR = "images"
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 analyzer = Analyzer()
-transriber = Transcriber()
 db = DBclient()
-
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -60,29 +59,73 @@ def process_text(entity, type):
     return success
 
 
-async def process_image(userid, content, type):
-    try:
-        emotions, remarks = await analyzer.analyze_image(content)
+async def process_image(userid, content):
+    # try:
+    emotions, remarks = await analyzer.analyze_image(content)
 
-        results = dict(
-            uid=userid,
-            type=type,
-            createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
-            content=remarks,
-            emotions=emotions,
-            score=0,
-        )
-        if userid:
-            db.add_sentiment(userid, results)
-        print(results)
-        return success
-    except Exception:
+    results = dict(
+        uid=userid,
+        type="image",
+        createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+        content=remarks,
+        emotions=emotions,
+        score=0,
+    )
+
+    db.add_sentiment(userid, results)
+    print(results)
+    return success
+    # except Exception:
+    #     return fail
+
+
+def process_audio(userid, content):
+    try:
+        # Convert BytesIO to in-memory bytes array for soundfile
+        audio_bytes = content.getvalue()
+
+        # Create a new BytesIO object with the audio bytes
+        with io.BytesIO(audio_bytes) as audio_buffer:
+            # Read audio data using soundfile
+            audio_data, samplerate = sf.read(audio_buffer)
+
+            # Convert to mono if stereo
+            if len(audio_data.shape) > 1:
+                audio_data = np.mean(audio_data, axis=1)
+
+            # Get emotion analysis results
+            results = analyzer.analyze_audio(audio_data, samplerate)
+
+            outdict = dict(
+                uid=userid,
+                type="audio",
+                createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+                content=f"Audio emotion analysis - Primary: {results['primary_emotion']} ({results['confidence']:.2%})",
+                emotions=results["emotions"],
+                primary_emotion=results["primary_emotion"],
+                confidence=results["confidence"],
+            )
+
+            db.add_sentiment(userid, outdict)
+            print(outdict)
+            return success
+
+    except Exception as e:
+        print(f"Error processing audio: {str(e)}")
         return fail
+
+
+def save_file(file, extension):
+    image_filename = f"{uuid4()}.{extension}"
+    image_path = os.path.join(SAVE_DIR, image_filename)
+
+    with open(image_path, "wb") as img_file:
+        img_file.write(file)
 
 
 @app.get("/")
 async def home():
-    return {"status": "success"}
+    return success
 
 
 @app.get("/therapists")
@@ -127,10 +170,6 @@ async def moderate(text: str) -> str:
     return success
 
 
-class ImageRequest(BaseModel):
-    image_bytes: str
-
-
 @app.post("/analyze_image")
 async def analyze_image(
     user_id: str,
@@ -138,13 +177,19 @@ async def analyze_image(
     file: UploadFile = File(...),
 ):
     image_bytes = await file.read()
-    # image_filename = f"{uuid4()}.jpeg"
-    # image_path = os.path.join(SAVE_DIR, image_filename)
+    background_tasks.add_task(process_image, user_id, image_bytes)
+    return running
 
-    # with open(image_path, "wb") as img_file:
-    #     img_file.write(image_bytes)
 
-    background_tasks.add_task(process_image, user_id, image_bytes, "image")
+@app.post("/analyze_audio")
+async def analyze_audio(
+    user_id: str,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+):
+    audio_bytes = await file.read()
+    audio_file = io.BytesIO(audio_bytes)
+    background_tasks.add_task(process_audio, user_id, audio_file)
     return running
 
 

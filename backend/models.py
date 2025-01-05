@@ -3,13 +3,15 @@ import json
 import os
 import random
 
+import librosa
+import numpy as np
+import torch
 from google.cloud import language_v1, speech
 from google.oauth2 import service_account
+from llm import llm
 from openai import AsyncOpenAI
 from strictjson import strict_json_async
-from transformers import pipeline
-
-from llm import llm
+from transformers import AutoFeatureExtractor, AutoModelForAudioClassification, pipeline
 
 
 def load_language_client():
@@ -30,7 +32,14 @@ def load_speech_client():
     return client
 
 
-def load_model():
+def load_emotion_model():
+    model_id = "firdhokk/speech-emotion-recognition-with-openai-whisper-large-v3"
+    model = AutoModelForAudioClassification.from_pretrained(model_id)
+    feature_extractor = AutoFeatureExtractor.from_pretrained(model_id, do_normalize=True)
+    return model, feature_extractor
+
+
+def load_text_model():
     model = pipeline(
         "text-classification",
         model="j-hartmann/emotion-english-distilroberta-base",
@@ -54,7 +63,9 @@ class Analyzer:
     def __init__(self):
         self.client = load_language_client()
         self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_KEY"))
-        self.model = load_model()
+        self.text_model = load_text_model()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.emotion_model, self.feature_extractor = load_emotion_model()
         self.emotions = {
             "joy": ["happy", "delighted", "cheerful", "pleased"],
             "trust": ["trustful", "accepting", "confident"],
@@ -85,7 +96,7 @@ class Analyzer:
             type_=language_v1.Document.Type.PLAIN_TEXT,
         )
         sentiment = self.client.analyze_sentiment(document=document)
-        emotion_results = self.model(text)[0]
+        emotion_results = self.text_model(text)[0]
         return {
             "score": sentiment.document_sentiment.score,
             "emotions": {emotion["label"]: emotion["score"] for emotion in emotion_results},
@@ -107,13 +118,7 @@ class Analyzer:
                             "type": "text",
                             "text": f"Classify the emotion of the human and evaluate percentages for each of the 7 emotions - {','.join(list(emotion_dict.keys()))}.All the percentages should add up to 100. Also describe the image and the person. Return a json object with the following keys - {','.join(list(emotion_dict.keys()))}, remarks",
                         },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "low",
-                            },
-                        },
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}", "detail": "low"}},
                     ],
                 }
             ],
@@ -127,40 +132,81 @@ class Analyzer:
         response = {key: random.uniform(d1[key], d2[key]) / 100 for key in d1}
         return response, remarks
 
+    def preprocess_audio(self, audio_path, max_duration=30.0):
+        audio_array, sampling_rate = librosa.load(audio_path, sr=self.feature_extractor.sampling_rate)
 
-class Transcriber:
-    def __init__(self):
-        self.client = load_speech_client()
-
-    def transcribe(self, audio_file):
-        with open(audio_file, "rb") as file:
-            audio_content = file.read()
-
-        audio = speech.RecognitionAudio(content=audio_content)
-
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=44100,
-            language_code="en-US",
-            audio_channel_count=2,
-            enable_separate_recognition_per_channel=False,
-            enable_automatic_punctuation=True,
-            use_enhanced=True,
+        max_length = int(self.feature_extractor.sampling_rate * max_duration)
+        if len(audio_array) > max_length:
+            audio_array = audio_array[:max_length]
+        else:
+            audio_array = np.pad(audio_array, (0, max_length - len(audio_array)))
+        inputs = self.feature_extractor(
+            audio_array,
+            sampling_rate=self.feature_extractor.sampling_rate,
+            max_length=max_length,
+            truncation=True,
+            return_tensors="pt",
         )
+        return {key: value.to(self.device) for key, value in inputs.items()}
 
-        try:
-            response = self.client.recognize(config=config, audio=audio)
-            if not response.results:
-                return ""
+    def analyze_audio(self, audio_path):
+        inputs = self.preprocess_audio(audio_path)
 
-            full_transcript = ""
-            for result in response.results:
-                if result.alternatives:
-                    transcript = result.alternatives[0].transcript
-                    full_transcript += transcript + " "
+        with torch.no_grad():
+            outputs = self.emotion_model(**inputs)
+        logits = outputs.logits
+        predicted_id = torch.argmax(logits, dim=-1).item()
+        predicted_emotion = self.emotion_model.config.id2label[predicted_id]
 
-            return full_transcript.strip()
+        probabilities = torch.softmax(logits, dim=-1)[0]
+        emotion_scores = {self.emotion_model.config.id2label[i]: prob.item() for i, prob in enumerate(probabilities)}
 
-        except Exception as e:
-            print(f"An error occurred during transcription: {str(e)}")
-            raise
+        return {"predicted_emotion": predicted_emotion, "emotion_scores": emotion_scores}
+
+# def preprocess_audio(self, audio_array: np.ndarray, orig_sr: int) -> dict:
+#     """
+#     Preprocess audio data for the emotion recognition model.
+#     """
+#     # Resample if necessary
+#     if orig_sr != self.sampling_rate:
+#         audio_array = librosa.resample(audio_array, orig_sr=orig_sr, target_sr=self.sampling_rate)
+
+#     # Handle duration
+#     max_length = int(self.sampling_rate * self.max_duration)
+#     if len(audio_array) > max_length:
+#         audio_array = audio_array[:max_length]
+#     else:
+#         audio_array = np.pad(audio_array, (0, max_length - len(audio_array)))
+
+#     # Extract features
+#     inputs = self.feature_extractor(audio_array, sampling_rate=self.sampling_rate, max_length=max_length, truncation=True, return_tensors="pt")
+
+#     return {k: v.to(self.device) for k, v in inputs.items()}
+
+
+# def analyze_audio_data(self, audio_array: np.ndarray, sampling_rate: int) -> dict:
+#     """
+#     Analyze audio data and return emotion predictions.
+#     """
+#     # Preprocess audio
+#     inputs = self.preprocess_audio(audio_array, sampling_rate)
+
+#     # Get model predictions
+#     with torch.no_grad():
+#         outputs = self.audio_model(**inputs)
+
+#     # Get probabilities using softmax
+#     probs = torch.nn.functional.softmax(outputs.logits, dim=-1)[0]
+
+#     # Convert predictions to dictionary
+#     emotions = {}
+#     for i, prob in enumerate(probs):
+#         emotions[self.id2label[i]] = float(prob)  # Convert tensor to float for JSON serialization
+
+#     # Get primary emotion
+#     predicted_id = torch.argmax(probs).item()
+#     primary_emotion = self.id2label[predicted_id]
+#     confidence = float(probs[predicted_id])
+
+#     return {"primary_emotion": primary_emotion, "confidence": confidence, "emotions": emotions}
+
