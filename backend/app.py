@@ -6,6 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from uuid import uuid4
 
+import openai
 import uvicorn
 from db import DBclient
 from dotenv import load_dotenv
@@ -59,23 +60,24 @@ def process_text(entity, type):
 
 
 async def process_image(userid, content, q):
-    # try:
-    emotions, remarks = await analyzer.analyze_image(content)
+    try:
+        emotions, remarks = await analyzer.analyze_image(content)
 
-    results = dict(
-        uid=userid,
-        type="image",
-        createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
-        content=remarks,
-        emotions=emotions,
-        score=0,
-    )
+        results = dict(
+            uid=userid,
+            type="image",
+            createdAt=datetime.datetime.now() - timedelta(days=random.randint(-7, 7)),
+            content=remarks,
+            emotions=emotions,
+            score=0,
+        )
 
-    db.add_sentiment(userid, results, q)
-    print(results)
-    return success
-    # except Exception:
-    #     return fail
+        db.add_sentiment(userid, results, q)
+        print(results)
+        return success
+    except openai.BadRequestError:
+        print("image processed")
+        return fail
 
 
 async def process_audio(userid, audio_data, q):
@@ -165,6 +167,11 @@ async def analyze_image(
 ):
     q = bool(q)
     image_bytes = await file.read()
+    # image_filename = f"{uuid4()}.jpeg"
+    # image_path = os.path.join(SAVE_DIR, image_filename)
+
+    # with open(image_path, "wb") as img_file:
+    #     img_file.write(image_bytes)
     background_tasks.add_task(process_image, user_id, image_bytes, q)
     return running
 

@@ -115,15 +115,15 @@ def create_dict(html_list, gender):
     return data_list
 
 
-city = "hyderabad"
-output = []
+if __name__ == "__main__":
+    city = "hyderabad"
+    output = []
 
-for gender in ["male", "female"]:
-    url = f"https://www.practo.com/{city}/doctors-for-individual-therapy?filters%5Bdoctor_gender%5D%5B%5D={gender}"
-    s = Scraper()
-    html_list = s.scrape_website(url)
-    output.extend(create_dict(html_list, gender))
+    for gender in ["male", "female"]:
+        url = f"https://www.practo.com/{city}/doctors-for-individual-therapy?filters%5Bdoctor_gender%5D%5B%5D={gender}"
+        s = Scraper()
+        html_list = s.scrape_website(url)
+        output.extend(create_dict(html_list, gender))
 
-
-with open("data.json", "w", encoding="utf-8") as json_file:
-    json.dump(output, json_file, ensure_ascii=False, indent=4)
+    with open("data.json", "w", encoding="utf-8") as json_file:
+        json.dump(output, json_file, ensure_ascii=False, indent=4)

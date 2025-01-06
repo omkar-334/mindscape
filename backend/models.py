@@ -102,9 +102,10 @@ class Analyzer:
             "emotions": {emotion["label"]: emotion["score"] for emotion in emotion_results},
         }
 
-    async def analyze_image(self, image):
+    async def analyze_image(self, image, path=False):
+        if path:
+            image = open(image, "rb").read()
         base64_image = base64.b64encode(image).decode("utf-8")
-
         response = await self.openai_client.chat.completions.create(
             model="gpt-4o-mini",
             response_format={"type": "json_object"},
