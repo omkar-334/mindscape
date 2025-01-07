@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
+import { useAuth } from '../contexts/AuthContext';
 
 const VideoContext = createContext();
 
 export const VideoProvider = ({ children }) => {
+  const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
   const [hasConsented, setHasConsented] = useState(false);
   const [showConsentPopup, setShowConsentPopup] = useState(true);
@@ -33,6 +35,7 @@ export const VideoProvider = ({ children }) => {
     if (webcamRef.current && !processingFrames) {
       setProcessingFrames(true);
       try {
+        
         const imageSrc = webcamRef.current.getScreenshot();
         if (imageSrc) {
           // Convert base64 to blob
@@ -41,6 +44,7 @@ export const VideoProvider = ({ children }) => {
           // Create FormData and append the image as 'file'
           const formData = new FormData();
           formData.append('file', imageBlob, imageBlob.name);
+          
 
           // Log the data being sent
           console.log('Sending frame data:', {
@@ -50,13 +54,16 @@ export const VideoProvider = ({ children }) => {
             fileName: imageBlob.name
           });
 
-          const url = `${import.meta.env.VITE_API_URL}/analyze_image`;
+          const url = `${import.meta.env.VITE_API_URL}/analyze_image?file=${formData}&user_id=${user.uid}&q=${false}`;
+          console.log(url)
 
-          const response = await fetch(url, {
-            method: 'POST',
-            body: formData,
-          });
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/analyze_image?user_id=${user.uid}&q=${false}`,{
+          method: 'POST',
+          body: formData
+        
+      });
 
+      
           if (!response.ok) {
             throw new Error(`Failed to analyze video frame: ${await response.text()}`);
           }
@@ -78,7 +85,7 @@ export const VideoProvider = ({ children }) => {
     setError(null);
     setIsRecording(true);
     console.log('Starting recording...');
-    frameInterval.current = setInterval(captureAndSendFrame, 5000);
+    frameInterval.current = setInterval(captureAndSendFrame, 10000);
   }, []);
 
   const stopRecording = useCallback(() => {

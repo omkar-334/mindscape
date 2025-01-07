@@ -11,6 +11,7 @@ import Profile from './components/Profile';
 import JournalEditor from './components/JournalEditor';
 import Analysis from './components/Analysis';
 import ChatBot from './components/Chatbot';
+import MentalHealthQuestionnaire from './components/Question';
 
 const AppRoutes = () => {
   return (
@@ -73,6 +74,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute>
             <ChatBot />
+          </PrivateRoute>
+        }
+      />
+       <Route
+        path="/question"
+        element={
+          <PrivateRoute>
+            <MentalHealthQuestionnaire />
           </PrivateRoute>
         }
       />

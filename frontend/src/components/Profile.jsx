@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, MapPin, Calendar, Award, Book, Heart, Phone, UserX } from 'lucide-react';
+import { BarChart2, MapPin, Calendar, Award, Book, Heart, Phone, UserX, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, collection, query, orderBy, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import { format, eachDayOfInterval, subDays, startOfWeek, addWeeks } from 'date-fns';
 import SentimentTracker from './SentimentTracker';
 import SentimentLineGraph from './SentimentLineGraph';
+import ProfileBuilder from './ProfileBuilder';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -15,6 +16,33 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [sentiments, setSentiments] = useState([]);
+  const [isProfileBuilderOpen, setIsProfileBuilderOpen] = useState(false);
+  const [therapists, setTherapists] = useState([]);
+  const [isLoadingTherapists, setIsLoadingTherapists] = useState(true);
+  const [therapistsError, setTherapistsError] = useState(null);
+
+
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      setIsLoadingTherapists(true);
+      setTherapistsError(null);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/therapists`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch therapists');
+        }
+        const data = await response.json();
+        setTherapists(data);
+      } catch (error) {
+        console.error('Error fetching therapists:', error);
+        setTherapistsError(error.message);
+      } finally {
+        setIsLoadingTherapists(false);
+      }
+    };
+
+    fetchTherapists();
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -122,6 +150,69 @@ const Profile = () => {
     } catch (error) {
       console.error('Error updating anonymous status:', error);
     }
+  };
+
+
+  const renderTherapistsSection = () => {
+    if (isLoadingTherapists) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      );
+    }
+
+    if (therapistsError) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-red-600">Error loading therapists: {therapistsError}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    if (!therapists.length) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-600">No therapists available in your area.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid md:grid-cols-3 gap-6">
+        {therapists.map((therapist) => (
+          <div 
+            key={therapist.id}
+            className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
+          >
+            <h3 className="font-semibold text-gray-800 mb-2">{therapist.name}</h3>
+            <p className="text-sm text-gray-600 mb-2">{therapist.specialty}</p>
+            {therapist.distance && (
+              <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
+                <MapPin className="w-4 h-4" />
+                <span>{typeof therapist.distance === 'number' ? 
+                  `${therapist.distance.toFixed(1)} miles` : 
+                  therapist.distance}
+                </span>
+              </div>
+            )}
+            <p className="text-sm text-gray-600 mb-1">{therapist.address}</p>
+            {therapist.phone && (
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <Phone className="w-4 h-4" />
+                <a href={`tel:${therapist.phone}`}>{therapist.phone}</a>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const [localResources] = useState([
@@ -244,6 +335,17 @@ const Profile = () => {
     return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">Loading...</div>;
   }
 
+  const handleProfileUpdate = (updatedProfileData) => {
+    setUserData(prev => ({
+      ...prev,
+      profileDetails: updatedProfileData
+    }));
+  };
+
+  if (loading || !userData) {
+    return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">Loading...</div>;
+  }
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const currentMoodEntry = moodData?.[today];
 
@@ -263,10 +365,19 @@ const Profile = () => {
                 {isAnonymous ? 'A' : userData.displayName?.charAt(0) || 'A'}
               </div>
             )}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                {isAnonymous ? userData.anonymousName : userData.displayName}
-              </h1>
+            <div className="flex-grow">
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                  {isAnonymous ? userData.anonymousName : userData.displayName}
+                </h1>
+                <button
+                  onClick={() => setIsProfileBuilderOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                  Edit Profile
+                </button>
+              </div>
               <div className="flex items-center gap-4 text-gray-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-4 h-4" />
@@ -364,26 +475,7 @@ const Profile = () => {
 
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-8">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Local Mental Health Resources</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {localResources.map((resource, index) => (
-            <div 
-              key={index}
-              className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
-            >
-              <h3 className="font-semibold text-gray-800 mb-2">{resource.name}</h3>
-              <p className="text-sm text-gray-600 mb-2">{resource.specialty}</p>
-              <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
-                <MapPin className="w-4 h-4" />
-                <span>{resource.distance}</span>
-              </div>
-              <p className="text-sm text-gray-600 mb-1">{resource.address}</p>
-              <div className="flex items-center gap-1 text-sm text-blue-600">
-                <Phone className="w-4 h-4" />
-                <a href={`tel:${resource.phone}`}>{resource.phone}</a>
-              </div>
-            </div>
-          ))}
-        </div>
+        {renderTherapistsSection()}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -413,6 +505,12 @@ const Profile = () => {
           </button>
         </div>
       </div>
+      <ProfileBuilder
+        isOpen={isProfileBuilderOpen}
+        onClose={() => setIsProfileBuilderOpen(false)}
+        user={user}
+        onUpdate={handleProfileUpdate}
+      />
     </div>
   );
 };
