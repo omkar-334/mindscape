@@ -82,7 +82,7 @@ def create_dict(html_list, gender):
         # Extract location
         location_tag = soup.find("span", {"data-qa-id": "practice_locality"})
         city_tag = soup.find("span", {"data-qa-id": "practice_city"})
-        location = f"{location_tag.text}, {city_tag.text}" if location_tag and city_tag else None
+        location = f"{location_tag.text} {city_tag.text}" if location_tag and city_tag else None
 
         # Extract hospital/clinic name
         hospital_tag = soup.find("span", {"data-qa-id": "doctor_clinic_name"})

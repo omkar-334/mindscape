@@ -32,7 +32,8 @@ const Profile = () => {
           throw new Error('Failed to fetch therapists');
         }
         const data = await response.json();
-        setTherapists(data);
+        setTherapists(data.therapists);
+        console.log('Therapists:', therapists);
       } catch (error) {
         console.error('Error fetching therapists:', error);
         setTherapistsError(error.message);
@@ -192,14 +193,11 @@ const Profile = () => {
             className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
           >
             <h3 className="font-semibold text-gray-800 mb-2">{therapist.name}</h3>
-            <p className="text-sm text-gray-600 mb-2">{therapist.specialty}</p>
-            {therapist.distance && (
+            <p className="text-sm text-gray-600 mb-2">{therapist.hospital_name}</p>
+            {therapist.location && (
               <div className="flex items-center gap-1 text-sm text-gray-600 mb-1">
                 <MapPin className="w-4 h-4" />
-                <span>{typeof therapist.distance === 'number' ? 
-                  `${therapist.distance.toFixed(1)} miles` : 
-                  therapist.distance}
-                </span>
+                <p className="text-sm text-gray-600 mb-1">{therapist.location}</p>
               </div>
             )}
             <p className="text-sm text-gray-600 mb-1">{therapist.address}</p>
