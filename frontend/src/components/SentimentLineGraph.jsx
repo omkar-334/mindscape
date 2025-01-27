@@ -98,7 +98,7 @@ const SentimentLineGraph = ({ sentiments }) => {
   };
 
   return (
-    <div className="w-full h-96 bg-white rounded-xl p-6 shadow-sm">
+    <div className="w-full h-96 bg-white rounded-xl p-6 shadow-sm mb-6 pb-12">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Emotion Trends</h2>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart

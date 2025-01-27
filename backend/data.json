@@ -1,7 +1,7 @@
 [
     {
         "name": "Dr. Siva Anoop Yella",
-        "location": "Ameerpet,, Hyderabad",
+        "location": "Ameerpet, Hyderabad",
         "hospital_name": "Aster Prime Hospital",
         "consultation_fee": "₹1000",
         "reviews": "94",
@@ -9,26 +9,8 @@
         "gender": "male"
     },
     {
-        "name": "Dr. Chetan Raj",
-        "location": "Begumpet,, Hyderabad",
-        "hospital_name": "Dr. Chetan's Homeo Clinics",
-        "consultation_fee": "₹999",
-        "reviews": "97",
-        "stories": "1434 Patient",
-        "gender": "male"
-    },
-    {
-        "name": "Dr. Bandari Srikanth",
-        "location": "Banjara Hills,, Hyderabad",
-        "hospital_name": "Asha Hospital",
-        "consultation_fee": "₹1000",
-        "reviews": "98",
-        "stories": "147 Patient",
-        "gender": "male"
-    },
-    {
         "name": "Mr. Srikanth Majjiga",
-        "location": "Quthbullapur,, Hyderabad",
+        "location": "Quthbullapur, Hyderabad",
         "hospital_name": "HTA Psychological Counseling Center",
         "consultation_fee": "₹2500",
         "reviews": "100",
@@ -36,17 +18,8 @@
         "gender": "male"
     },
     {
-        "name": "Dr. Venkateshwar Rao Deshineni   (PhD)",
-        "location": "Nacharam,, Hyderabad",
-        "hospital_name": "Smart Minds Centre for Positive  Psychology",
-        "consultation_fee": "₹2500",
-        "reviews": "99",
-        "stories": "94 Patient",
-        "gender": "male"
-    },
-    {
         "name": "Dr. G Prasad Rao",
-        "location": "Banjara Hills,, Hyderabad",
+        "location": "Banjara Hills, Hyderabad",
         "hospital_name": "Asha Hospital",
         "consultation_fee": "₹1500",
         "reviews": "78",
@@ -55,7 +28,7 @@
     },
     {
         "name": "Dr. Ajay Krishna Gorla",
-        "location": "Banjara Hills,, Hyderabad",
+        "location": "Banjara Hills, Hyderabad",
         "hospital_name": "Asha Hospital",
         "consultation_fee": "₹1200",
         "reviews": "100",
@@ -64,7 +37,7 @@
     },
     {
         "name": "Dr. Chytanya Deepak",
-        "location": "Gachibowli,, Hyderabad",
+        "location": "Gachibowli, Hyderabad",
         "hospital_name": "Asha Neuromodulation Clinic",
         "consultation_fee": "₹1500",
         "reviews": "50",
@@ -73,7 +46,7 @@
     },
     {
         "name": "Mr. Karthik Madugula",
-        "location": "Madhapur,, Hyderabad",
+        "location": "Madhapur, Hyderabad",
         "hospital_name": "Sakar Counselling Centre",
         "consultation_fee": "₹5000",
         "reviews": "98",
@@ -81,8 +54,35 @@
         "gender": "male"
     },
     {
+        "name": "Dr. Chetan Raj",
+        "location": "Begumpet, Hyderabad",
+        "hospital_name": "Dr. Chetan's Homeo Clinics",
+        "consultation_fee": "₹999",
+        "reviews": "97",
+        "stories": "1436 Patient",
+        "gender": "male"
+    },
+    {
+        "name": "Dr. Bandari Srikanth",
+        "location": "Banjara Hills, Hyderabad",
+        "hospital_name": "Asha Hospital",
+        "consultation_fee": "₹1000",
+        "reviews": "98",
+        "stories": "148 Patient",
+        "gender": "male"
+    },
+    {
+        "name": "Dr. Venkateshwar Rao Deshineni   (PhD)",
+        "location": "Nacharam, Hyderabad",
+        "hospital_name": "Smart Minds Centre for Positive  Psychology",
+        "consultation_fee": "₹2500",
+        "reviews": "99",
+        "stories": "97 Patient",
+        "gender": "male"
+    },
+    {
         "name": "Dr. Prem Kumar",
-        "location": "Uppal,, Hyderabad",
+        "location": "Uppal, Hyderabad",
         "hospital_name": "Dawn Org",
         "consultation_fee": "₹4000",
         "reviews": "99",
@@ -91,7 +91,7 @@
     },
     {
         "name": "Dr. Krantikar (PhD)   (PhD)",
-        "location": "Kukatpally,, Hyderabad",
+        "location": "Kukatpally, Hyderabad",
         "hospital_name": "Dr Krantikar Psychology Centre",
         "consultation_fee": "₹1500",
         "reviews": "74",
@@ -99,26 +99,26 @@
         "gender": "male"
     },
     {
-        "name": null,
-        "location": null,
-        "hospital_name": null,
-        "consultation_fee": null,
-        "reviews": null,
-        "stories": null,
+        "name": "Ms. Sneha Khelani",
+        "location": "Manikonda, Hyderabad",
+        "hospital_name": "Retrospect Counselling",
+        "consultation_fee": "₹1800",
+        "reviews": "100",
+        "stories": "39 Patient",
         "gender": "female"
     },
     {
         "name": "Ms. Sonali Nagdeo",
-        "location": "Secunderabad,, Hyderabad",
+        "location": "Secunderabad, Hyderabad",
         "hospital_name": "Magic Mirror Counselling",
         "consultation_fee": "₹1200",
         "reviews": "97",
-        "stories": "102 Patient",
+        "stories": "103 Patient",
         "gender": "female"
     },
     {
         "name": "Ms. Tanushree Atul Oza",
-        "location": "Secunderabad,, Hyderabad",
+        "location": "Secunderabad, Hyderabad",
         "hospital_name": "Healthy Mind Counselling Centre",
         "consultation_fee": "₹1500",
         "reviews": "100",
@@ -127,7 +127,7 @@
     },
     {
         "name": "Ms. Trishi Tangri",
-        "location": "Nanakramguda,, Hyderabad",
+        "location": "Nanakramguda, Hyderabad",
         "hospital_name": "Bija Mantra",
         "consultation_fee": "₹1800",
         "reviews": "95",
@@ -135,26 +135,17 @@
         "gender": "female"
     },
     {
-        "name": "Ms. Sneha Khelani",
-        "location": "Manikonda,, Hyderabad",
-        "hospital_name": "Retrospect Counselling",
-        "consultation_fee": "₹1500",
-        "reviews": "100",
-        "stories": "39 Patient",
-        "gender": "female"
-    },
-    {
-        "name": "Dr. Spandana Pasam",
-        "location": "Jubilee Hills,, Hyderabad",
-        "hospital_name": "Karla Mind And Neuromodulation Clinic",
-        "consultation_fee": "₹1000",
-        "reviews": "100",
-        "stories": "20 Patient",
+        "name": "Ms. Richa Khetawat",
+        "location": "Banjara Hills, Hyderabad",
+        "hospital_name": "Family Counselling",
+        "consultation_fee": "₹3200",
+        "reviews": "99",
+        "stories": "128 Patient",
         "gender": "female"
     },
     {
         "name": "Ms. Archana Nanduri",
-        "location": "Nagole,, Hyderabad",
+        "location": "Nagole, Hyderabad",
         "hospital_name": "Vidyaranya Counselling Centre",
         "consultation_fee": "₹1500",
         "reviews": "97",
@@ -163,70 +154,34 @@
     },
     {
         "name": "Dr. P. Madhurima Reddy (PhD)   (PhD)",
-        "location": "Kokapet,, Hyderabad",
+        "location": "Kokapet, Hyderabad",
         "hospital_name": "La Winspire International Training & Solutions LLP",
         "consultation_fee": "₹4000",
         "reviews": "94",
-        "stories": "294 Patient",
-        "gender": "female"
-    },
-    {
-        "name": "Ms. Rajeshwari Luther",
-        "location": "Banjara Hills,, Hyderabad",
-        "hospital_name": "Hope Trust",
-        "consultation_fee": "₹2500",
-        "reviews": "97",
-        "stories": "119 Patient",
-        "gender": "female"
-    },
-    {
-        "name": "Ms. Bhagyashree Nandraj",
-        "location": "Nallagandla,, Hyderabad",
-        "hospital_name": "Bhagyashree Nandraj Clinic",
-        "consultation_fee": "₹1000",
-        "reviews": "100",
-        "stories": "28 Patient",
-        "gender": "female"
-    },
-    {
-        "name": "Dr. Aarti Nagpal Mehta   (PhD)",
-        "location": "Paradise,, Hyderabad",
-        "hospital_name": "Sahara - Mental Health Clinic",
-        "consultation_fee": "₹2500",
-        "reviews": null,
-        "stories": null,
-        "gender": "female"
-    },
-    {
-        "name": "Ms. Ankita Jain",
-        "location": "Nanakramguda,, Hyderabad",
-        "hospital_name": "Bija Mantra",
-        "consultation_fee": "₹2000",
-        "reviews": "100",
-        "stories": "2 Patient",
-        "gender": "female"
-    },
-    {
-        "name": "Ms. Richa Khetawat",
-        "location": "Banjara Hills,, Hyderabad",
-        "hospital_name": "Family Counselling",
-        "consultation_fee": "₹3200",
-        "reviews": "99",
-        "stories": "127 Patient",
+        "stories": "299 Patient",
         "gender": "female"
     },
     {
         "name": "Ms. Dharmapuram Srilekha Auro",
-        "location": "Kukatpally,, Hyderabad",
+        "location": "Kukatpally, Hyderabad",
         "hospital_name": "Reason To Smile",
         "consultation_fee": "₹1500",
         "reviews": "100",
-        "stories": "80 Patient",
+        "stories": "83 Patient",
+        "gender": "female"
+    },
+    {
+        "name": "Ms. Bhagyashree Nandraj",
+        "location": "Nallagandla, Hyderabad",
+        "hospital_name": "Bhagyashree Nandraj Clinic",
+        "consultation_fee": "₹1000",
+        "reviews": "100",
+        "stories": "29 Patient",
         "gender": "female"
     },
     {
         "name": "Dr. Deepika Kommu",
-        "location": "Chanda Nagar,, Hyderabad",
+        "location": "Chanda Nagar, Hyderabad",
         "hospital_name": "Akhil Trucare Speciality Clinic",
         "consultation_fee": "₹1500",
         "reviews": "100",
@@ -235,7 +190,7 @@
     },
     {
         "name": "Dr. O. Jyothi",
-        "location": "Banjara Hills,, Hyderabad",
+        "location": "Banjara Hills, Hyderabad",
         "hospital_name": "Asha Hospital",
         "consultation_fee": "₹1500",
         "reviews": "100",
@@ -243,17 +198,17 @@
         "gender": "female"
     },
     {
-        "name": "Ms. Ritika Matta",
-        "location": "Adarsh Nagar,, Hyderabad",
-        "hospital_name": "Bridging Mind Gaps",
-        "consultation_fee": "₹1800",
-        "reviews": "100",
-        "stories": "75 Patient",
+        "name": "Ms. Rajeshwari Luther",
+        "location": "Banjara Hills, Hyderabad",
+        "hospital_name": "Hope Trust",
+        "consultation_fee": "₹2500",
+        "reviews": "98",
+        "stories": "122 Patient",
         "gender": "female"
     },
     {
         "name": "Ms. ANURADHA JAJU",
-        "location": "Abids,, Hyderabad",
+        "location": "Abids, Hyderabad",
         "hospital_name": "Talk N Share",
         "consultation_fee": "₹1200",
         "reviews": "100",
@@ -262,7 +217,7 @@
     },
     {
         "name": "Ms. Farheen Hussain",
-        "location": "Lakdikapul,, Hyderabad",
+        "location": "Lakdikapul, Hyderabad",
         "hospital_name": "Mind Heart Therapy",
         "consultation_fee": "₹1500",
         "reviews": "100",
@@ -271,7 +226,7 @@
     },
     {
         "name": "Ms. Keturah Queenie",
-        "location": "Banjara Hills,, Hyderabad",
+        "location": "Banjara Hills, Hyderabad",
         "hospital_name": "Little Stars and She Hospital",
         "consultation_fee": "₹700",
         "reviews": null,
@@ -279,12 +234,12 @@
         "gender": "female"
     },
     {
-        "name": "Ms. Akansha Kabra",
-        "location": "Banjara Hills,, Hyderabad",
-        "hospital_name": "Hope Trust",
-        "consultation_fee": "₹1650",
-        "reviews": "95",
-        "stories": "21 Patient",
+        "name": "Dr. Aarti Nagpal Mehta   (PhD)",
+        "location": "Paradise, Hyderabad",
+        "hospital_name": "Sahara - Mental Health Clinic",
+        "consultation_fee": "₹2500",
+        "reviews": null,
+        "stories": null,
         "gender": "female"
     }
 ]

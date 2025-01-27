@@ -146,7 +146,7 @@ const SentimentTracker = ({ sentiments }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Emotion Tracker</h2>
         <div className="flex items-center gap-2">
