@@ -12,6 +12,10 @@ from db import DBclient
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from scraper import Scraper
+from typing import List
+from scraper import create_dict
+from pydantic import BaseModel
 from llm import llm, openai_moderate
 from models import Analyzer
 from prompts import reflect_prompt, user_prompt
@@ -31,6 +35,7 @@ os.makedirs(SAVE_DIR, exist_ok=True)
 analyzer = Analyzer()
 db = DBclient()
 app = FastAPI()
+s= Scraper()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -38,6 +43,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class CityRequest(BaseModel):
+    city: str
 
 
 def process_text(entity, type):
@@ -116,11 +124,17 @@ async def home():
     return success
 
 
-@app.get("/therapists")
-def therapists():
-    with open("data.json", "r", encoding="utf-8") as json_file:
-        loaded_data = json.load(json_file)
-        return {"therapists": loaded_data}
+@app.post("/therapists")
+def therapists(request: CityRequest):
+    location = request.city.lower()
+    # preferred_genders = [gender.lower() for gender in preferred_therapists]
+    output = []
+    for gender in ["male", "female"]:
+        url = f"https://www.practo.com/{location}/doctors-for-individual-therapy?filters%5Bdoctor_gender%5D%5B%5D={gender}"
+        s = Scraper()
+        html_list = s.scrape_website(url)
+        output.extend(create_dict(html_list, gender))
+    return output
 
 
 @app.post("/reflect")

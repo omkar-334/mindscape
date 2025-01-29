@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, MapPin, Calendar, Award, Book, Heart, Phone, UserX, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTherapists } from '../contexts/TherapistsContext';
 import { doc, collection, query, orderBy, getDocs, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import { format, eachDayOfInterval, subDays, startOfWeek, addWeeks } from 'date-fns';
@@ -17,23 +18,31 @@ const Profile = () => {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [sentiments, setSentiments] = useState([]);
   const [isProfileBuilderOpen, setIsProfileBuilderOpen] = useState(false);
-  const [therapists, setTherapists] = useState([]);
-  const [isLoadingTherapists, setIsLoadingTherapists] = useState(true);
+  const { therapists, setTherapists, hasFetchedTherapists, setHasFetchedTherapists } = useTherapists();
+  const [isLoadingTherapists, setIsLoadingTherapists] = useState(false);
   const [therapistsError, setTherapistsError] = useState(null);
 
 
   useEffect(() => {
+    if (!userData || !userData.profileDetails?.city || hasFetchedTherapists) return;
     const fetchTherapists = async () => {
       setIsLoadingTherapists(true);
       setTherapistsError(null);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/therapists`);
+        const city = userData.profileDetails.city;
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/therapists`, {
+          method: "POST", 
+          headers: {
+            "Content-Type": "application/json", 
+          },
+          body: JSON.stringify({ city }), 
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch therapists');
         }
         const data = await response.json();
-        setTherapists(data.therapists);
-        console.log('Therapists:', therapists);
+        setTherapists(data);
+        setHasFetchedTherapists(true);
       } catch (error) {
         console.error('Error fetching therapists:', error);
         setTherapistsError(error.message);
@@ -41,9 +50,9 @@ const Profile = () => {
         setIsLoadingTherapists(false);
       }
     };
-
+    
     fetchTherapists();
-  }, []);
+  }, [userData, hasFetchedTherapists, setTherapists, setHasFetchedTherapists]);
 
   useEffect(() => {
     if (!user) return;
@@ -72,7 +81,6 @@ const Profile = () => {
       });
       setSentiments(sentimentData);
     });
-  
     return () => unsubscribeSentiments();
   }, [user]);
 
@@ -155,6 +163,17 @@ const Profile = () => {
 
 
   const renderTherapistsSection = () => {
+    if (!userData.location) {
+      <div className="text-center py-8">
+          <p className="text-red-600"> Location not set. </p>
+          <button 
+            onClick={() => setIsProfileBuilderOpen(true)}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            Set Location
+          </button>
+        </div>
+    }
     if (isLoadingTherapists) {
       return (
         <div className="flex items-center justify-center py-8">
@@ -180,14 +199,14 @@ const Profile = () => {
     if (!therapists.length) {
       return (
         <div className="text-center py-8">
-          <p className="text-gray-600">No therapists available in your area.</p>
+          <p className="text-gray-600">No therapists available.</p>
         </div>
       );
     }
 
     return (
       <div className="grid md:grid-cols-3 gap-6">
-        {therapists.map((therapist) => (
+        {therapists.filter((therapist)=> therapist.name).map((therapist) => (
           <div 
             key={therapist.id}
             className="p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition"
@@ -338,6 +357,7 @@ const Profile = () => {
       ...prev,
       profileDetails: updatedProfileData
     }));
+    setHasFetchedTherapists(false);
   };
 
   if (loading || !userData) {
