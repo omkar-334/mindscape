@@ -98,7 +98,7 @@ Ensure the following tools are installed:
 
 4. **Run the frontend server**:
    ```bash
-   npm start
+   npm run dev
    ```
 
 5. Open the app in your browser at `http://localhost:5173` (frontend) and `http://localhost:8000` (backend).
