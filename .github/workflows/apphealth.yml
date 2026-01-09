@@ -1,0 +1,40 @@
+name: App CI Sanity Check
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  sanity-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies (CI only)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            fastapi \
+            uvicorn \
+            python-dotenv \
+            openai \
+            pydub \
+            pyngrok
+
+      - name: Environment safety
+        run: |
+          echo "NGROK_TOKEN=dummy" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=dummy" >> $GITHUB_ENV
