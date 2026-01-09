@@ -3,7 +3,6 @@ name: App CI Sanity Check
 on:
   push:
     branches: [ main ]
-  schedule:
   workflow_dispatch:
 
 jobs:
@@ -39,5 +38,3 @@ jobs:
         run: |
           echo "NGROK_TOKEN=dummy" >> $GITHUB_ENV
           echo "OPENAI_API_KEY=dummy" >> $GITHUB_ENV
-
-    
